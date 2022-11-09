@@ -3,20 +3,28 @@ import express from 'express';
 import fs from 'fs';
 import mongoose from 'mongoose';
 import User from './src/models/user';
+import ShortenRouter from './src/routers/shorten.router';
+import UserRouter from './src/routers/user.router';
+
 // Setup
 const app: express.Application = express();
 const port: Number = 42069;
 const host: String = "localhost";
+
 require('dotenv').config()
 app.use(function (req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
 });
-
+app.use(express.urlencoded({ extended: true }));
 // Routes
+app.use('/user', UserRouter);
+app.use('/shorten', ShortenRouter);
+
 app.get('/ping', (req, res) => {
-    res.json({status: 400, fuck: "yeah"})
+	console.log(req.body.publicKey)
+    res.json({msg: "Pong!"}).sendStatus(200);
 })
 
 fs.readdirSync(__dirname + '/src/models').forEach((file) => {

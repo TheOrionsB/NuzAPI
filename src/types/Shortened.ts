@@ -1,4 +1,4 @@
-type ShortenedArray = {
+type Shortened = {
     source: String,
     target: String,
     passwordProtected: Boolean,
@@ -13,4 +13,4 @@ type ShortenedArray = {
     }
 }
 
-export type ShortenedArrayT = ShortenedArray;
+export type ShortenedT = Shortened;

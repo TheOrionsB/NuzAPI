@@ -1,11 +1,11 @@
 import {Schema, model} from 'mongoose';
-import {ShortenedArrayT} from '../types/ShortenedArray'
+import {ShortenedT} from '../types/Shortened'
 
 interface IUser {
-    username: String,
-    password: String,
-    shortened: Array<ShortenedArrayT>,
-    recoveryKey: String,
+    username: string,
+    password: string,
+    shortened: Array<ShortenedT>,
+    recoveryKey: string,
 }
 
 const userSchema = new Schema<IUser>({
