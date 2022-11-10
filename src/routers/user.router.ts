@@ -5,6 +5,10 @@ import { generateToken, checkAuthentication, getUsername } from '../utils/jwt.ut
 
 const router: Router = express.Router();
 
+/**
+ * While waiting on swagger implementation:
+ * Registers a new user
+ */
 
 router.post('/', async (req, res) => {
     if (!req.body.username || !req.body.password) {
@@ -31,6 +35,12 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * While waiting on swagger implementation:
+ * Authenticates user based on their username and password:
+ * Returns them a JWT that is valid for 5 hours
+ */
+
 router.post('/authenticate', async (req, res) => {
     if (!req.body.username || !req.body.password) {
         res.sendStatus(400);
@@ -48,6 +58,11 @@ router.post('/authenticate', async (req, res) => {
 
 router.use((req, res, next) => checkAuthentication(req, res, next));
 
+/**
+ * While waiting on swagger implementation:
+ * Fetches the user's shortened URLs (All of them)
+ */
+
 router.get('/:username', async (req, res) => {
     const username = getUsername(req.headers.authorization);
     if (!username || username !== req.params.username) {
@@ -61,8 +76,43 @@ router.get('/:username', async (req, res) => {
     return res.json({ message: "OK", data: { shortened: user?.shortened } });
 });
 
-router.put('/', (req, res) => { });
+/**
+ * While waiting on swagger implementation:
+ * Allows the user to change their password
+ */
 
-router.delete('/:username', (req, res) => { })
+router.put('/', async (req, res) => {
+    if (!req.body.password) return res.sendStatus(400);
+    const username = getUsername(req.headers.authorization);
+    const user = await User.findOne({ username: username });
+    if (!user) return res.sendStatus(404);
+    try {
+        user.password = await bcrypt.hash(req.body.password, 10);
+        user.save();
+        return res.sendStatus(200);
+    }
+    catch (e) {
+        return res.sendStatus(500)
+    }
+
+});
+
+/**
+ * While waiting on swagger implementation:
+ * Allows the user to delete their account
+ */
+
+router.delete('/:username', async (req, res) => {
+    const username = getUsername(req.headers.authorization);
+    if (!username || username !== req.params.username) return res.sendStatus(401);
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) return res.sendStatus(404);
+        user.delete();
+        res.sendStatus(200);
+    } catch (e) {
+        return res.sendStatus(500);
+    }
+})
 
 export default router;
