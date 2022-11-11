@@ -25,10 +25,6 @@ router.get('/', async (req,res) => {
     res.sendStatus(200);
 });
 
-router.get('/compare/:id', (req,res) => {
-    bcrypt.compare(req.params.id, "$2b$10$YE1L39epVx5cl/JvXEP2jekJ7Hi/CH5kwYSzsFeYbXDrWxnhaCob6").then((res) => console.log(res));
-})
-
 router.delete('/:id', (req,res) => {});
 
 router.get('/:id', (req,res) => {});

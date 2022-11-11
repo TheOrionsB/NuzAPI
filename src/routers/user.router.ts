@@ -51,10 +51,23 @@ router.post('/authenticate', async (req, res) => {
         } else {
             const generatedToken = await generateToken(req.body.username);
             res.statusCode = 200;
-            res.json({ message: "OK", data: { token: generatedToken, expires: Date.now() + 18000000 } });
+            res.json({ status: "OK", token: generatedToken });
         }
     }
 });
+
+/**
+ * While waiting on swagger implementation
+ * Checks if a user exists based on the username provided
+ */
+
+router.get('/exists/:username', async (req, res) => {
+    if (!req.params.username) return res.sendStatus(400);
+
+    const user = await User.findOne({username: req.params.username});
+    if (!user) return res.sendStatus(200);
+    else return res.sendStatus(409)
+})
 
 router.use((req, res, next) => checkAuthentication(req, res, next));
 
