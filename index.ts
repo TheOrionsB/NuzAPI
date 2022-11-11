@@ -19,10 +19,10 @@ app.use(function (req, res, next) {
 });
 app.use(express.urlencoded({ extended: true }));
 // Routes
-app.use('/user', UserRouter);
-app.use('/shorten', ShortenRouter);
-
-app.get('/ping', (req, res) => {
+app.use('/api/user', UserRouter);
+app.use('/api/shorten', ShortenRouter);
+app.use((req,res,next) => {console.log("FUCK"); next();})
+app.get('/api/ping', (req, res) => {
 	console.log(req.body.publicKey)
     res.json({msg: "Pong!"}).sendStatus(200);
 })
@@ -45,5 +45,5 @@ mongoose.connect(`${process.env.MONGO_URI}`, {
 
 // Run
 app.listen(port, () => {
-    console.log(`••• Server running on port ${port} •••`);
+    console.log(`••• Server running on: http://${host}:${port} •••`);
 })

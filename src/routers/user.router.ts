@@ -4,7 +4,8 @@ import bcrypt from 'bcrypt';
 import { generateToken, checkAuthentication, getUsername } from '../utils/jwt.util';
 
 const router: Router = express.Router();
-
+router.use(express.json())
+router.use(express.text())
 /**
  * While waiting on swagger implementation:
  * Registers a new user
@@ -63,7 +64,7 @@ router.post('/authenticate', async (req, res) => {
 
 router.get('/exists/:username', async (req, res) => {
     if (!req.params.username) return res.sendStatus(400);
-
+    if ((RegExp(/^[\d\w0-9A-Za-z\-]+$/).test(String(req.params.username))) !== true) return res.sendStatus(400);
     const user = await User.findOne({username: req.params.username});
     if (!user) return res.sendStatus(200);
     else return res.sendStatus(409)
