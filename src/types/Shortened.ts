@@ -1,16 +1,17 @@
-type Shortened = {
-    source: String,
-    target: String,
-    passwordProtected: Boolean,
-    password: String,
-    createdAt: Date,
-    isExpiringEnabled: Boolean,
-    ExpiresAt?: Date,
+interface IShortened  {
+    name: string;
+    source: string;
+    target: string;
+    passwordProtected: boolean;
+    password?: string;
+    createdAt: Date;
+    isExpiringEnabled: boolean;
+    expiresAt?: Date;
     stats: {
-        nHit: Number,
-        hitHistory: Array<Object>,
+        nHit: number;
+        hitHistory: Array<Object>;
         lastHit: Date
     }
 }
 
-export type ShortenedT = Shortened;
+export default IShortened;
