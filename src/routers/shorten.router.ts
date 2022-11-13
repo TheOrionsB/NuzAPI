@@ -1,32 +1,52 @@
 import express, { Router } from "express";
-import { ShortenedT } from "../types/Shortened";
+import Shortened from "../types/Shortened";
 import bcrypt from 'bcrypt';
+import mongoose from 'mongoose'
+import User from "../models/user";
+import { validateShortened } from "../utils/shortened.util";
+import { checkAuthentication } from "../utils/jwt.util";
+
 require('dotenv').config();
 
 const router: Router = express.Router();
+router.use(express.json());
+router.use(express.text());
+router.use((req, res, next) => checkAuthentication(req, res, next));
 
-router.get('/', async (req,res) => {
-    const encpwd = await bcrypt.hash("bite", 10);
-    const shorten: ShortenedT = {
+router.post('/', async (req, res) => {
+    console.log(req.body)
+    if (!req.body.username || !req.body.toshorten || !validateShortened(req.body.toshorten)) return res.sendStatus(400);
+    const user = await User.findOne({ username: req.body.username });
+    if (!user) return res.sendStatus(404);
+
+    const newShortened: Shortened = {
+        name: req.body.toshorten.name,
         createdAt: new Date(),
-        passwordProtected: true,
-        source: "a89c",
+        isExpiringEnabled: req.body.toshorten.isExpiringEnabled,
+        source: req.body.toshorten.source,
+        target: req.body.toshorten.target,
         stats: {
-            nHit: 0,
             hitHistory: [],
-            lastHit: new Date()
+            lastHit: new Date(),
+            nHit: 0
         },
-        isExpiringEnabled: false,
-        ExpiresAt: new Date(),
-        password: encpwd,
-        target: 'https://google.com'
+        passwordProtected: req.body.toshorten.passwordProtected,
+        expiresAt: req.body.toshorten.isExpiringEnabled ? new Date(req.body.toshorten.expiresAt) : undefined,
+        password: req.body.toshorten.passwordProtected ? await bcrypt.hash(req.body.toshorten.password, 10) : undefined
     }
-    console.log(shorten);
-    res.sendStatus(200);
-});
+    try {
+        user?.shortened.push(newShortened);
+        user?.save();
+        res.statusCode = 200;
+        res.json({success: true});
+    } catch (e) {
+        console.log(e);
+        return res.sendStatus(500);
+    }
+})
 
-router.delete('/:id', (req,res) => {});
+router.delete('/:id', (req, res) => { });
 
-router.get('/:id', (req,res) => {});
+router.get('/:id', (req, res) => { });
 
 export default router;
