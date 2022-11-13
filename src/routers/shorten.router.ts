@@ -1,7 +1,6 @@
 import express, { Router } from "express";
 import Shortened from "../types/Shortened";
 import bcrypt from 'bcrypt';
-import mongoose from 'mongoose'
 import User from "../models/user";
 import { validateShortened } from "../utils/shortened.util";
 import { checkAuthentication } from "../utils/jwt.util";
