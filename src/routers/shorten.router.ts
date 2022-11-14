@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import User from "../models/user";
 import { validateShortened } from "../utils/shortened.util";
 import { checkAuthentication } from "../utils/jwt.util";
+import IShortened from "../types/Shortened";
 
 require('dotenv').config();
 
@@ -46,6 +47,16 @@ router.post('/', async (req, res) => {
 
 router.delete('/:id', (req, res) => { });
 
-router.get('/:id', (req, res) => { });
+router.get('/:username', async (req, res) => {
+    if (!req.params.username) return res.sendStatus(400);
+    try {
+        const user = await User.findOne({username: req.params.username})
+        if (!user) return res.sendStatus(404);
+        res.statusCode = 200;
+        return res.json({shortened: user.shortened})
+    } catch (e) {
+        return res.sendStatus(500);
+    }
+});
 
 export default router;
