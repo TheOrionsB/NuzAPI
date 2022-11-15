@@ -10,7 +10,6 @@ require('dotenv').config();
 
 const router: Router = express.Router();
 router.use(express.json());
-router.use(express.text());
 router.use((req, res, next) => checkAuthentication(req, res, next));
 
 router.post('/', async (req, res) => {
