@@ -33,7 +33,7 @@ fs.readdirSync(__dirname + '/src/models').forEach((file) => {
 	}
 })
 
-setTimeout(() => cleanQueue(), 60000);
+setTimeout(() => cleanQueue(), 60000 * 5);
 
 console.log("• Waiting for mongodb...")
 mongoose.connect(`${process.env.MONGO_URI}`, {
