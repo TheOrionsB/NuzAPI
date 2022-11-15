@@ -1,7 +1,7 @@
 import {Schema, model} from 'mongoose';
 import IShortened from '../types/Shortened'
+export interface IUser {
 
-interface IUser {
     username: string,
     password: string,
     shortened: Array<IShortened>,

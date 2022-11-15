@@ -5,11 +5,50 @@ import User from "../models/user";
 import { validateShortened } from "../utils/shortened.util";
 import { checkAuthentication } from "../utils/jwt.util";
 import IShortened from "../types/Shortened";
+import ShortenedQueue from "../models/shortenedqueue";
 
 require('dotenv').config();
 
 const router: Router = express.Router();
 router.use(express.json());
+
+const generateRandomShortened = (): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const generatedAt = new Date();
+    let generated: string = '';
+    for (let i: number = 0; i < 5; i++) {
+        generated += chars.at(Math.floor(Math.random() * chars.length));
+        generated.replace(generated[i], Math.round(Math.random()) === 0 ? generated[i].toLowerCase() : generated[i].toUpperCase());
+    }
+    generated += String(generatedAt.getTime()).substring(String(generatedAt.getTime()).length - 3);
+    return generated;
+}
+
+const getUnusedShortened = async (): Promise<string> => {
+    let valid = generateRandomShortened();
+    const queue = await ShortenedQueue.find({ src: valid });
+    const users = await User.find({ shortened: { source: valid } });
+    if (queue.length > 0 || users.length > 0) return getUnusedShortened();
+    return valid;
+}
+
+router.get('/new', async (req, res) => {
+    const validShortened = await getUnusedShortened();
+    try {
+        const newQueueItem = new ShortenedQueue({
+            src: validShortened,
+            enteredQueueAt: new Date(),
+            initiatedBy: req.query.user ? req.query.user : "Anonymous"
+        })
+        newQueueItem.save();
+        res.statusCode = 200;
+        res.json({ success: true, shortened: validShortened });
+    } catch (e) {
+        res.statusCode = 500;
+        res.json({ success: false })
+    }
+})
+
 router.use((req, res, next) => checkAuthentication(req, res, next));
 
 router.post('/', async (req, res) => {
@@ -37,7 +76,7 @@ router.post('/', async (req, res) => {
         user?.shortened.push(newShortened);
         user?.save();
         res.statusCode = 200;
-        res.json({success: true});
+        res.json({ success: true });
     } catch (e) {
         console.log(e);
         return res.sendStatus(500);
@@ -49,10 +88,10 @@ router.delete('/:id', (req, res) => { });
 router.get('/:username', async (req, res) => {
     if (!req.params.username) return res.sendStatus(400);
     try {
-        const user = await User.findOne({username: req.params.username})
+        const user = await User.findOne({ username: req.params.username })
         if (!user) return res.sendStatus(404);
         res.statusCode = 200;
-        return res.json({shortened: user.shortened})
+        return res.json({ shortened: user.shortened })
     } catch (e) {
         return res.sendStatus(500);
     }
