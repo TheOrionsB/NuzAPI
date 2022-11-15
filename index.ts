@@ -2,6 +2,7 @@
 import express from 'express';
 import fs from 'fs';
 import mongoose from 'mongoose';
+import cleanQueue from './src/utils/queuecleanup.util';
 import ShortenRouter from './src/routers/shorten.router';
 import UserRouter from './src/routers/user.router';
 
@@ -31,6 +32,8 @@ fs.readdirSync(__dirname + '/src/models').forEach((file) => {
 		console.log(`• ${file} imported.`);
 	}
 })
+
+setTimeout(() => cleanQueue(), 60000);
 
 console.log("• Waiting for mongodb...")
 mongoose.connect(`${process.env.MONGO_URI}`, {

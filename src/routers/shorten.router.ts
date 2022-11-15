@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 import User from "../models/user";
 import { validateShortened } from "../utils/shortened.util";
 import { checkAuthentication } from "../utils/jwt.util";
-import IShortened from "../types/Shortened";
 import ShortenedQueue from "../models/shortenedqueue";
 
 require('dotenv').config();
