@@ -51,8 +51,9 @@ router.get('/new', async (req, res) => {
 router.use((req, res, next) => checkAuthentication(req, res, next));
 
 router.post('/', async (req, res) => {
-    console.log(req.body)
     if (!req.body.username || !req.body.toshorten || !validateShortened(req.body.toshorten)) return res.sendStatus(400);
+    const users = await User.find({ "shortened.source": req.body.toshorten.source });
+    if (users.length > 0) return res.sendStatus(409);
     const user = await User.findOne({ username: req.body.username });
     if (!user) return res.sendStatus(404);
 

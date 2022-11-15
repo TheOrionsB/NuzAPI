@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import cleanQueue from './src/utils/queuecleanup.util';
 import ShortenRouter from './src/routers/shorten.router';
 import UserRouter from './src/routers/user.router';
+import User, { IUser } from './src/models/user';
 
 // Setup
 require('dotenv').config()
@@ -23,7 +24,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/user', UserRouter);
 app.use('/api/shorten', ShortenRouter);
 app.get('/api/ping', (req, res) => {
-    res.json({msg: "Pong!"}).sendStatus(200);
+	res.json({ msg: "Pong!" }).sendStatus(200);
+
+})
+app.get('/:shortenedId', async (req, res) => {
+	const user = await User.find({ "shortened.source": req.params.shortenedId });
+	if (user.length !== 1 ) return res.redirect(`http://localhost:8080/?nf=${req.params.shortenedId}`);
+	const shortenedIdx: number = user[0].shortened.findIndex((shortened) => shortened.source === req.params.shortenedId);
+	res.redirect(user[0].shortened[shortenedIdx].target);
 
 })
 fs.readdirSync(__dirname + '/src/models').forEach((file) => {
@@ -47,5 +55,5 @@ mongoose.connect(`${process.env.MONGO_URI}`, {
 
 // Run
 app.listen(port, () => {
-    console.log(`••• Server running on: http://${host}:${port} •••`);
+	console.log(`••• Server running on: http://${host}:${port} •••`);
 })
