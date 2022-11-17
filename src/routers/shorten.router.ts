@@ -83,7 +83,18 @@ router.post('/', async (req, res) => {
     }
 })
 
-router.delete('/:id', (req, res) => { });
+router.delete('/:shortenedsuffix', async (req, res) => {
+    const user = await User.findOne({ "shortened.source": req.params.shortenedsuffix });
+    if (!user) return res.sendStatus(404);
+    try {
+        const shortenedIdx = user.shortened.findIndex(shortened => shortened.source === req.params.shortenedsuffix);
+        user.shortened.splice(shortenedIdx, 1);
+        user.save();
+        return res.sendStatus(200);
+    } catch {
+        res.sendStatus(500);
+    }
+});
 
 router.get('/:username', async (req, res) => {
     if (!req.params.username) return res.sendStatus(400);
