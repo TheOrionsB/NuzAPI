@@ -1,7 +1,7 @@
 import express, { Router } from "express";
 import Shortened from "../types/Shortened";
 import bcrypt from 'bcrypt';
-import User from "../models/user";
+import User, { IUser } from "../models/user";
 import { validateShortened } from "../utils/shortened.util";
 import { checkAuthentication } from "../utils/jwt.util";
 import ShortenedQueue from "../models/shortenedqueue";
@@ -107,5 +107,20 @@ router.get('/:username', async (req, res) => {
         return res.sendStatus(500);
     }
 });
+
+router.get('/:username/top', async (req, res) => {
+    if (!req.params.username) return res.sendStatus(400);
+    let user;
+    try {
+        user = await User.findOne({ username: req.params.username })
+        if (!user) return res.sendStatus(404);
+        res.statusCode = 200;
+    } catch (e) {
+        return res.sendStatus(500);
+    }
+    const shortenedList = user.shortened;
+    shortenedList.sort((a,b) => b.stats.nHit - a.stats.nHit);
+    return res.json({status: 200, shortened: shortenedList});
+})
 
 export default router;
