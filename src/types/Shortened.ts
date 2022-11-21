@@ -9,7 +9,7 @@ interface IShortened  {
     expiresAt?: Date;
     stats: {
         nHit: number;
-        hitHistory: Array<Object>;
+        hitHistory: Array<Date>;
         lastHit: Date
     }
 }
