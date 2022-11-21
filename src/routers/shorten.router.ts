@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import Shortened from "../types/Shortened";
 import bcrypt from 'bcrypt';
 import User, { IUser } from "../models/user";
+import { IHitHistoryItem } from '../types/HitHistoryT'
 import { validateShortened } from "../utils/shortened.util";
 import { checkAuthentication } from "../utils/jwt.util";
 import ShortenedQueue from "../models/shortenedqueue";
@@ -133,11 +134,22 @@ router.get('/:username/hithistory', async (req, res) => {
     } catch (e) {
         return res.sendStatus(500);
     }
-    let hitHistory: Array<Date> = [];
+    let hitHistory: Array<IHitHistoryItem> = [];
     for (let i = 0; i < user.shortened.length; i++) {
-        hitHistory = [...hitHistory, ...user.shortened[i].stats.hitHistory]
+        for (let j = 0; j < user.shortened[i].stats.hitHistory.length; j++) {
+            const currentHit = new Date(user.shortened[i].stats.hitHistory[j]);
+            doesObjectArrayHaveLabel(hitHistory, currentHit.toDateString()) ? hitHistory[hitHistory.findIndex((item) => item.label === currentHit.toDateString())].hitCount += 1 : hitHistory.push(<IHitHistoryItem>{ label: currentHit.toDateString(), hitCount: 1 });
+        }
     }
-    return res.json({status: "OK", history: hitHistory})
+    return res.json({ status: "OK", history: hitHistory.sort((a,b) => new Date(b.label).getTime() - new Date(a.label).getTime()) })
 })
+
+const doesObjectArrayHaveLabel = (mainArray: Array<IHitHistoryItem>, key: String) => {
+    const filtered = mainArray.filter((obj) => {
+        if (obj.label === key) return obj;
+    });
+    if (filtered.length > 0) return true;
+    return false;
+}
 
 export default router;
