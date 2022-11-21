@@ -118,9 +118,26 @@ router.get('/:username/top', async (req, res) => {
     } catch (e) {
         return res.sendStatus(500);
     }
-    const shortenedList = user.shortened;
-    shortenedList.sort((a,b) => b.stats.nHit - a.stats.nHit);
-    return res.json({status: 200, shortened: shortenedList});
+    const shortenedList: Array<Shortened> = user.shortened;
+    shortenedList.sort((a, b) => b.stats.nHit - a.stats.nHit);
+    return res.json({ status: 200, shortened: shortenedList.slice(0, 5) });
+})
+
+router.get('/:username/hithistory', async (req, res) => {
+    if (!req.params.username) return res.sendStatus(400);
+    let user;
+    try {
+        user = await User.findOne({ username: req.params.username });
+        if (!user) return res.sendStatus(404);
+        res.statusCode = 200;
+    } catch (e) {
+        return res.sendStatus(500);
+    }
+    let hitHistory: Array<Date> = [];
+    for (let i = 0; i < user.shortened.length; i++) {
+        hitHistory = [...hitHistory, ...user.shortened[i].stats.hitHistory]
+    }
+    return res.json({status: "OK", history: hitHistory})
 })
 
 export default router;
