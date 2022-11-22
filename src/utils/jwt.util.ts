@@ -1,6 +1,11 @@
 import express from 'express';
-import jwt from 'jsonwebtoken'
+import jwt, { Jwt, JwtPayload } from 'jsonwebtoken'
 
+type UserTokenT = JwtPayload & {
+    username?: string;
+    iat?: number;
+    exp?: number;
+}
 const signingOptions: jwt.SignOptions = { expiresIn: "5h" }
 
 export const generateToken: Function = async (username: string) => {
@@ -19,10 +24,14 @@ export const checkAuthentication: Function = (req: express.Request, res: express
         return;
     }
     try {
-        jwt.verify(req.headers.authorization!.split(" ")[1], process.env.APP_ENC!)
-        next();
+        const token: UserTokenT = <JwtPayload>jwt.verify(req.headers.authorization!.split(" ")[1], process.env.APP_ENC!)
+        if (token.username === req.query.username || token.username === req.body.username ||  token.username === req.params.username) {
+            next();
+        } else {
+            return res.sendStatus(401);
+        }
     } catch (e: any) {
-        res.status(401).send({status: "Unauthorized", error: "Invalid or expired token"});
+        res.status(401).send({ status: "Unauthorized", error: "Invalid or expired token" });
     }
     return;
 }
