@@ -1,11 +1,10 @@
 import {Schema, model} from 'mongoose';
 import IShortened from '../types/Shortened'
 export interface IUser {
-
     username: string,
     password: string,
     shortened: Array<IShortened>,
-    recoveryKey: string,
+    recoveryKey?: string,
 }
 
 const userSchema = new Schema<IUser>({

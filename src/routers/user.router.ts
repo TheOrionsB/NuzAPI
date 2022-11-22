@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import User from "../models/user";
+import User, { IUser } from "../models/user";
 import bcrypt from 'bcrypt';
 import { generateToken, checkAuthentication, getUsername } from '../utils/jwt.util';
 
@@ -65,7 +65,7 @@ router.post('/authenticate', async (req, res) => {
 router.get('/exists/:username', async (req, res) => {
     if (!req.params.username) return res.sendStatus(400);
     if ((RegExp(/^[\d\w0-9A-Za-z\-]+$/).test(String(req.params.username))) !== true) return res.sendStatus(400);
-    const user = await User.findOne({username: req.params.username});
+    const user = await User.findOne({ username: req.params.username });
     if (!user) return res.sendStatus(200);
     else return res.sendStatus(409)
 })
@@ -88,6 +88,25 @@ router.get('/:username', async (req, res) => {
     }
     res.statusCode = 200;
     return res.json({ message: "OK", data: { shortened: user?.shortened } });
+});
+
+/**
+ * While waiting on swagger implementation:
+ * Fetches the user's basic info
+ */
+
+
+router.get('/:username/basic', async (req, res) => {
+    const username: string = getUsername(req.headers.authorization);
+    if (!username || username !== req.params.username) {
+        return res.sendStatus(401);
+    }
+    const user: IUser | null = await User.findOne({ username: username });
+    if (!user) {
+        return res.sendStatus(404);
+    }
+    res.statusCode = 200;
+    return res.json({ message: "OK", data: { username: user.username, hasRecoveryKey: user.recoveryKey ? true : false, nShortens: user.shortened.length } });
 });
 
 /**
