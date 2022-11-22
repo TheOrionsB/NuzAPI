@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import User, { IUser } from "../models/user";
 import bcrypt from 'bcrypt';
 import { generateToken, checkAuthentication, getUsername } from '../utils/jwt.util';
+import { generateRandomShortened } from "../utils/randomstring.util";
 
 const router: Router = express.Router();
 router.use(express.json())
@@ -114,21 +115,39 @@ router.get('/:username/basic', async (req, res) => {
  * Allows the user to change their password
  */
 
-router.put('/', async (req, res) => {
+router.post('/:username/recoverykey/new', async (req, res) => {
     if (!req.body.password) return res.sendStatus(400);
-    const username = getUsername(req.headers.authorization);
-    const user = await User.findOne({ username: username });
+    const user = await User.findOne({ username: req.params.username });
     if (!user) return res.sendStatus(404);
+    if (await bcrypt.compare(req.body.password, user.password) !== true) { console.log("wrong password"); return res.sendStatus(401) };
     try {
-        user.password = await bcrypt.hash(req.body.password, 10);
+        const recovery = generateRandomShortened();
+        user.recoveryKey = await bcrypt.hash(recovery, 10);
         user.save();
-        return res.sendStatus(200);
+        res.statusCode = 200;
+        return res.json({ status: 200, key: recovery });
+    } catch (e) {
+        console.log(e);
+        return res.sendStatus(500);
     }
-    catch (e) {
-        return res.sendStatus(500)
-    }
+})
 
-});
+router.put('/:username', async (req, res) => {
+    if (!req.body.oldPassword || !req.body.newPassword || !req.body.username) return res.sendStatus(400);
+    const user = await User.findOne({ username: req.body.username });
+    if (!user) return res.sendStatus(404);
+    if (await bcrypt.compare(req.body.oldPassword, user.password) !== true && await bcrypt.compare(req.body.oldPassword, user.recoveryKey ? user.recoveryKey : "nothing") !== true) return res.sendStatus(401);
+        try {
+            user.password = await bcrypt.hash(req.body.newPassword, 10);
+            user.save();
+            return res.sendStatus(200);
+        }
+        catch (e) {
+            console.log(e);
+            return res.sendStatus(500)
+        }
+
+    });
 
 /**
  * While waiting on swagger implementation:

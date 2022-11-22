@@ -21,6 +21,7 @@ export const generateToken: Function = async (username: string) => {
 export const checkAuthentication: Function = (req: express.Request, res: express.Response, next: Function) => {
     if (!req.headers.authorization?.includes("Bearer")) {
         res.sendStatus(401);
+        console.log("no header")
         return;
     }
     try {
@@ -28,6 +29,7 @@ export const checkAuthentication: Function = (req: express.Request, res: express
         if (token.username === req.query.username || token.username === req.body.username ||  token.username === req.params.username) {
             next();
         } else {
+            console.log("unidentified")
             return res.sendStatus(401);
         }
     } catch (e: any) {
