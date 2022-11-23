@@ -29,7 +29,7 @@ app.get('/api/ping', (req, res) => {
 })
 app.get('/:shortenedId', async (req, res) => {
 	const user = await User.find({ "shortened.source": req.params.shortenedId });
-	if (user.length !== 1) return res.redirect(`http://localhost:8080/?nf=${req.params.shortenedId}`);
+	if (user.length !== 1) return res.redirect(`http://localhost:8080/nf?sf=${req.params.shortenedId}`);
 	const selectedUser = user[0];
 	const shortenedIdx: number = selectedUser.shortened.findIndex((shortened) => shortened.source === req.params.shortenedId);
 	try {
@@ -42,6 +42,7 @@ app.get('/:shortenedId', async (req, res) => {
 		console.log(e)
 		return res.sendStatus(500).json({ status: 500, message: "INTERNAL SERVER ERROR" });
 	}
+	if (selectedUser.shortened[shortenedIdx].password) return res.redirect(`http://localhost:8080/pp?sf=${req.params.shortenedId}`)
 	return res.redirect(selectedUser.shortened[shortenedIdx].target);
 })
 fs.readdirSync(__dirname + '/src/models').forEach((file) => {

@@ -37,6 +37,18 @@ router.get('/new', async (req, res) => {
     }
 })
 
+router.post('/targetrequest/:suffix', async (req, res) => {
+    if (!req.body.password || !req.params.suffix) return res.sendStatus(400);
+    const user = await User.findOne({"shortened.source":  req.params.suffix});
+    if (!user) return res.sendStatus(404);
+    const shortenedIndex = user.shortened.findIndex((predicate) => predicate.source === req.params.suffix);
+    if (await bcrypt.compare(req.body.password, user.shortened[shortenedIndex].password!) !== true) {
+        return res.sendStatus(401);
+    }
+    res.statusCode = 200;
+    return res.json({success: true, target: user.shortened[shortenedIndex].target})
+})
+
 router.use((req, res, next) => checkAuthentication(req, res, next));
 
 router.post('/', async (req, res) => {
