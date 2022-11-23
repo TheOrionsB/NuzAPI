@@ -58,6 +58,8 @@ router.post('/authenticate', async (req, res) => {
     }
 });
 
+
+
 /**
  * While waiting on swagger implementation
  * Checks if a user exists based on the username provided
@@ -77,6 +79,10 @@ router.use((req, res, next) => checkAuthentication(req, res, next));
  * While waiting on swagger implementation:
  * Fetches the user's shortened URLs (All of them)
  */
+
+ router.post('/verifycookie', async (req, res) => {
+    return res.sendStatus(200);
+})
 
 router.get('/:username', async (req, res) => {
     const username = getUsername(req.headers.authorization);
@@ -137,17 +143,17 @@ router.put('/:username', async (req, res) => {
     const user = await User.findOne({ username: req.body.username });
     if (!user) return res.sendStatus(404);
     if (await bcrypt.compare(req.body.oldPassword, user.password) !== true && await bcrypt.compare(req.body.oldPassword, user.recoveryKey ? user.recoveryKey : "nothing") !== true) return res.sendStatus(401);
-        try {
-            user.password = await bcrypt.hash(req.body.newPassword, 10);
-            user.save();
-            return res.sendStatus(200);
-        }
-        catch (e) {
-            console.log(e);
-            return res.sendStatus(500)
-        }
+    try {
+        user.password = await bcrypt.hash(req.body.newPassword, 10);
+        user.save();
+        return res.sendStatus(200);
+    }
+    catch (e) {
+        console.log(e);
+        return res.sendStatus(500)
+    }
 
-    });
+});
 
 /**
  * While waiting on swagger implementation:
