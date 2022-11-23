@@ -10,8 +10,8 @@ import User, { IUser } from './src/models/user';
 // Setup
 require('dotenv').config()
 const app: express.Application = express();
-const port: Number = 42069;
-const host: String = "localhost";
+const port: Number = Number(process.env.PORT) || 42069;
+const host: String = process.env.HOST || "localhost";
 
 app.use(function (req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
@@ -29,7 +29,7 @@ app.get('/api/ping', (req, res) => {
 })
 app.get('/:shortenedId', async (req, res) => {
 	const user = await User.find({ "shortened.source": req.params.shortenedId });
-	if (user.length !== 1) return res.redirect(`http://localhost:8080/nf?sf=${req.params.shortenedId}`);
+	if (user.length !== 1) return res.redirect(`${process.env.CLIENT_URL}/nf?sf=${req.params.shortenedId}`);
 	const selectedUser = user[0];
 	const shortenedIdx: number = selectedUser.shortened.findIndex((shortened) => shortened.source === req.params.shortenedId);
 	try {
@@ -42,7 +42,7 @@ app.get('/:shortenedId', async (req, res) => {
 		console.log(e)
 		return res.sendStatus(500).json({ status: 500, message: "INTERNAL SERVER ERROR" });
 	}
-	if (selectedUser.shortened[shortenedIdx].password) return res.redirect(`http://localhost:8080/pp?sf=${req.params.shortenedId}`)
+	if (selectedUser.shortened[shortenedIdx].password) return res.redirect(`${process.env.CLIENT_URL}/pp?sf=${req.params.shortenedId}`)
 	return res.redirect(selectedUser.shortened[shortenedIdx].target);
 })
 fs.readdirSync(__dirname + '/src/models').forEach((file) => {
@@ -52,7 +52,7 @@ fs.readdirSync(__dirname + '/src/models').forEach((file) => {
 	}
 })
 
-setTimeout(() => cleanQueue(), 60000 * 5);
+setInterval(() => cleanQueue(), 60000 * 5);
 
 console.log("• Waiting for mongodb...")
 mongoose.connect(`${process.env.MONGO_URI}`, {
