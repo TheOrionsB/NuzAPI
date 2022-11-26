@@ -13,7 +13,8 @@ const app: express.Application = express();
 const port: Number = Number(process.env.PORT) || 42069;
 const host: String = process.env.HOST || "localhost";
 
-app.use(function (req, res, next) {
+app.use(function (req, res, next) { 
+	res.header("Content-Security-Policy",`default-src '${process.env.CORS_HEADER_ORIGIN}';` )
 	res.header("Access-Control-Allow-Origin", process.env.CORS_HEADER_ORIGIN);
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
